@@ -1,4 +1,4 @@
-filename = 'input2.txt'
+filename = 'input.txt'
 
 with open(filename) as f:
     lines = f.readlines()
@@ -12,6 +12,10 @@ lines = [[line[5], line[36]] for line in lines]
 all_steps = {}
 ordered_steps = []
 removed_prereqs = []
+num_workers = 5
+worker_queue = []
+
+time = 0
 
 #find out what all the possible steps are
 for line in lines:
@@ -31,14 +35,31 @@ for line in lines:
         all_steps[step].append(prereq_step)
 
 
+def process_queue(min_letter):
+    if len(worker_queue) > 0:
+        #TO-DO: save letter and corresponding value to dict or something
+        for letter in worker_queue:
+            letter_num = 61 + (ord('A'))
+
 #define function to determine next step to take
 def next_step(dictionary):
     possible_steps = []
-    # print(possible_steps)
     for key,value in dictionary.items():
         if value == [""] and key not in removed_prereqs:
-            possible_steps.append(key)
-    next_step = min(possible_steps)
+            possible_steps.append(key) 
+
+    while len(worker_queue) < num_workers:
+        if len(possible_steps) > 0:
+            next_step = min(possible_steps)
+            worker_queue.append(next_step)
+    #sort the queue so that the first element is the min element
+    worker_queue.sort()
+
+    process_queue(worker_queue[0])
+
+
+
+
     removed_prereqs.append(next_step)
     print(next_step)
     ordered_steps.append(next_step)
@@ -61,12 +82,10 @@ while len(all_steps) != len(ordered_steps):
 
 # print("ordered steps: {}".format(ordered_steps))
 
-answer = "".join(ordered_steps)
-print(answer)
+
 
 
 
 # sample_dict = {'B':['A'],'C':['B','A']}
 # remove_prereq('A', sample_dict)
 # print(sample_dict)
-
